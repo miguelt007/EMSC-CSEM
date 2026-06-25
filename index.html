@@ -173,15 +173,56 @@ tbody tr:hover {
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 
 <script>
+/* -----------------------------------
+   MAPA BASE
+----------------------------------- */
 let map = L.map('map').setView([20, 0], 2);
 
-// Tile layer
 L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
   maxZoom: 18
 }).addTo(map);
 
 let markersLayer = L.layerGroup().addTo(map);
+let tectonicBoundaries = L.layerGroup().addTo(map);
+let tectonicPlates = L.layerGroup().addTo(map);
 
+/* -----------------------------------
+   FUNÇÕES DE ESTILO
+----------------------------------- */
+function magClass(mag) {
+    if (mag < 4) return "mag-low";
+    if (mag < 5) return "mag-mid";
+    if (mag < 6) return "mag-high";
+    return "mag-veryhigh";
+}
+
+function markerColor(mag) {
+    if (mag < 4) return "green";
+    if (mag < 5) return "yellow";
+    if (mag < 6) return "orange";
+    return "red";
+}
+
+function markerSize(mag) {
+    return 10 + mag * 4;
+}
+   <script>
+/* -----------------------------------
+   MAPA BASE
+----------------------------------- */
+let map = L.map('map').setView([20, 0], 2);
+
+L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+  maxZoom: 18
+}).addTo(map);
+
+let markersLayer = L.layerGroup().addTo(map);
+let tectonicBoundaries = L.layerGroup().addTo(map);
+let tectonicPlates = L.layerGroup().addTo(map);
+
+/* -----------------------------------
+   FUNÇÕES DE ESTILO
+----------------------------------- */
 function magClass(mag) {
     if (mag < 4) return "mag-low";
     if (mag < 5) return "mag-mid";
@@ -200,6 +241,9 @@ function markerSize(mag) {
     return 10 + mag * 4;
 }
 
+/* -----------------------------------
+   SISMOS (EMSC / SeismicPortal)
+----------------------------------- */
 async function loadEarthquakes() {
     const url = "https://www.seismicportal.eu/fdsnws/event/1/query?limit=20&format=json";
 
@@ -220,9 +264,6 @@ async function loadEarthquakes() {
 
             const googleLink = `https://www.google.com/maps?q=${lat},${lon}`;
 
-            /* ------------------------------
-               MARCADOR + ONDA DE CHOQUE CENTRADA
-            --------------------------------*/
             const size = markerSize(p.mag);
             const color = markerColor(p.mag);
 
@@ -275,9 +316,6 @@ async function loadEarthquakes() {
               <a href="${googleLink}" target="_blank">Abrir no Google Maps</a>
             `);
 
-            /* ------------------------------
-               TABELA
-            --------------------------------*/
             const row = `
               <tr>
                 <td data-label="Data/Hora">${p.time}</td>
@@ -298,9 +336,74 @@ async function loadEarthquakes() {
     }
 }
 
+/* -----------------------------------
+   PLACAS TECTÓNICAS (BOUNDARIES + PLATES)
+----------------------------------- */
+async function loadTectonicBoundaries() {
+    const url = "https://raw.githubusercontent.com/fraxen/tectonicplates/master/GeoJSON/PB2002_boundaries.json";
+
+    try {
+        const response = await fetch(url);
+        const data = await response.json();
+
+        tectonicBoundaries.clearLayers();
+
+        L.geoJSON(data, {
+            style: {
+                color: "#ff0000",
+                weight: 2,
+                opacity: 0.8
+            }
+        }).addTo(tectonicBoundaries);
+
+    } catch (e) {
+        console.error("Erro ao carregar limites das placas:", e);
+    }
+}
+
+function randomColor() {
+    const colors = [
+        "#3498db", "#9b59b6", "#e67e22",
+        "#1abc9c", "#f1c40f", "#e74c3c",
+        "#2ecc71", "#34495e"
+    ];
+    return colors[Math.floor(Math.random() * colors.length)];
+}
+
+async function loadTectonicPlates() {
+    const url = "https://raw.githubusercontent.com/fraxen/tectonicplates/master/GeoJSON/PB2002_plates.json";
+
+    try {
+        const response = await fetch(url);
+        const data = await response.json();
+
+        tectonicPlates.clearLayers();
+
+        L.geoJSON(data, {
+            style: function(feature) {
+                return {
+                    color: "#555555",
+                    weight: 1,
+                    fillColor: randomColor(),
+                    fillOpacity: 0.25
+                };
+            }
+        }).addTo(tectonicPlates);
+
+    } catch (e) {
+        console.error("Erro ao carregar polígonos das placas:", e);
+    }
+}
+
+/* -----------------------------------
+   INICIALIZAÇÃO
+----------------------------------- */
 loadEarthquakes();
 setInterval(loadEarthquakes, 180000); // 3 minutos
-</script>
 
+loadTectonicBoundaries();
+loadTectonicPlates();
+</script>
 </body>
 </html>
+
