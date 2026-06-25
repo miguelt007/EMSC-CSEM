@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html lang="pt">
+<head>
+<meta charset="UTF-8">
+<title>Sismos em Tempo Real - EMSC</title>
+<style>
+  table { border-collapse: collapse; width: 100%; }
+  th, td { border: 1px solid #ccc; padding: 8px; text-align: left; }
+  th { background: #eee; }
+</style>
+</head>
+<body>
+
+<h2>Sismos em Tempo Real (EMSC-CSEM)</h2>
+<table id="eqTable">
+  <thead>
+    <tr>
+      <th>Data/Hora</th>
+      <th>Magnitude</th>
+      <th>Profundidade</th>
+      <th>Localização</th>
+    </tr>
+  </thead>
+  <tbody></tbody>
+</table>
+
+<script>
+async function loadEarthquakes() {
+    const url = "https://www.seismicportal.eu/fdsnws/event/1/query?limit=20&format=json";
+
+    const response = await fetch(url);
+    const data = await response.json();
+
+    const tbody = document.querySelector("#eqTable tbody");
+    tbody.innerHTML = "";
+
+    data.features.forEach(eq => {
+        const props = eq.properties;
+
+        const row = `
+          <tr>
+            <td>${props.time}</td>
+            <td>${props.mag}</td>
+            <td>${props.depth} km</td>
+            <td>${props.flynn_region}</td>
+          </tr>
+        `;
+        tbody.innerHTML += row;
+    });
+}
+
+// Atualiza a cada 3 minutos
+loadEarthquakes();
+setInterval(loadEarthquakes, 180000);
+</script>
+
+</body>
+</html>
