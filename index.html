@@ -40,7 +40,7 @@ body {
    CONTAINER
 --------------------------------*/
 .container {
-  max-width: 1100px;
+  max-width: 1200px;
   margin: auto;
   background: var(--bg2);
   padding: 20px;
@@ -86,6 +86,18 @@ tbody tr:hover {
   background: var(--row-hover);
 }
 
+/* Cores por magnitude */
+.mag-low { color: #2ecc71; font-weight: bold; }      /* <4 verde */
+.mag-mid { color: #f1c40f; font-weight: bold; }      /* 4–5 amarelo */
+.mag-high { color: #e67e22; font-weight: bold; }     /* 5–6 laranja */
+.mag-veryhigh { color: #e74c3c; font-weight: bold; } /* >6 vermelho */
+
+/* Ícone do globo */
+.map-icon {
+  font-size: 20px;
+  text-decoration: none;
+}
+
 /* Mobile */
 @media (max-width: 700px) {
   table, thead, tbody, th, td, tr {
@@ -128,9 +140,11 @@ tbody tr:hover {
     <thead>
       <tr>
         <th>Data/Hora</th>
-        <th>Magnitude</th>
-        <th>Profundidade</th>
+        <th>Mag</th>
+        <th>Prof</th>
         <th>Localização</th>
+        <th>Entidade</th>
+        <th>Mapa</th>
       </tr>
     </thead>
     <tbody></tbody>
@@ -138,6 +152,13 @@ tbody tr:hover {
 </div>
 
 <script>
+function magClass(mag) {
+    if (mag < 4) return "mag-low";
+    if (mag < 5) return "mag-mid";
+    if (mag < 6) return "mag-high";
+    return "mag-veryhigh";
+}
+
 async function loadEarthquakes() {
     const url = "https://www.seismicportal.eu/fdsnws/event/1/query?limit=20&format=json";
 
@@ -150,13 +171,23 @@ async function loadEarthquakes() {
 
         data.features.forEach(eq => {
             const p = eq.properties;
+            const g = eq.geometry;
+
+            const lat = g.coordinates[1];
+            const lon = g.coordinates[0];
+
+            const googleLink = `https://www.google.com/maps?q=${lat},${lon}`;
 
             const row = `
               <tr>
                 <td data-label="Data/Hora">${p.time}</td>
-                <td data-label="Magnitude">${p.mag}</td>
+                <td data-label="Magnitude" class="${magClass(p.mag)}">${p.mag}</td>
                 <td data-label="Profundidade">${p.depth} km</td>
                 <td data-label="Localização">${p.flynn_region}</td>
+                <td data-label="Entidade">${p.auth}</td>
+                <td data-label="Mapa">
+                    <a class="map-icon" href="${googleLink}" target="_blank">🌍</a>
+                </td>
               </tr>
             `;
             tbody.innerHTML += row;
