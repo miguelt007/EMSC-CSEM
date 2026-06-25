@@ -221,7 +221,7 @@ async function loadEarthquakes() {
             const googleLink = `https://www.google.com/maps?q=${lat},${lon}`;
 
             /* ------------------------------
-               MARCADOR + ONDA DE CHOQUE
+               MARCADOR + ONDA DE CHOQUE CENTRADA
             --------------------------------*/
             const size = markerSize(p.mag);
             const color = markerColor(p.mag);
@@ -231,11 +231,9 @@ async function loadEarthquakes() {
                 html: `
                   <div style="
                     position: relative;
-                    width:${size}px;
-                    height:${size}px;
-                    background:${color};
-                    border-radius:50%;
-                    box-shadow:0 0 15px ${color};
+                    width:${size * 2}px;
+                    height:${size * 2}px;
+                    transform: translate(-50%, -50%);
                   ">
                     <div style="
                       position:absolute;
@@ -243,6 +241,18 @@ async function loadEarthquakes() {
                       left:50%;
                       width:${size}px;
                       height:${size}px;
+                      background:${color};
+                      border-radius:50%;
+                      box-shadow:0 0 15px ${color};
+                      transform:translate(-50%, -50%);
+                    "></div>
+
+                    <div style="
+                      position:absolute;
+                      top:50%;
+                      left:50%;
+                      width:${size * 2}px;
+                      height:${size * 2}px;
                       border:2px solid ${color};
                       border-radius:50%;
                       transform:translate(-50%, -50%);
@@ -250,8 +260,8 @@ async function loadEarthquakes() {
                     "></div>
                   </div>
                 `,
-                iconSize: [size, size],
-                iconAnchor: [size/2, size/2]
+                iconSize: [size * 2, size * 2],
+                iconAnchor: [size, size]
             });
 
             let marker = L.marker([lat, lon], { icon }).addTo(markersLayer);
