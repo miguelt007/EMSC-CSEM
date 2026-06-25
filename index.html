@@ -194,9 +194,9 @@ async function loadEarthquakes() {
         `&latitude=${lat}&longitude=${lon}&maxradiuskm=20` +
         `&starttime=${start}&endtime=${end}`;
 
-      let mmi = "-";
-      let cdi = "-";
-      let felt = "-";
+      let mmi = "N/A";
+      let cdi = "N/A";
+      let felt = "N/A";
 
       try {
         const usgsResp = await fetch(usgsUrl);
