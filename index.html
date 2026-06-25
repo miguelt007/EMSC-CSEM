@@ -5,7 +5,6 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Sismos em Tempo Real - EMSC</title>
 
-<!-- Leaflet CSS -->
 <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
 
 <style>
@@ -34,14 +33,12 @@ body {
   color: var(--text);
 }
 
-/* MAPA */
 #map {
   height: 420px;
   width: 100%;
   margin-bottom: 20px;
 }
 
-/* CONTAINER */
 .container {
   max-width: 1200px;
   margin: auto;
@@ -51,7 +48,6 @@ body {
   box-shadow: 0 0 20px rgba(0,0,0,0.15);
 }
 
-/* TÍTULO */
 h2 {
   margin-top: 0;
   text-align: center;
@@ -59,7 +55,6 @@ h2 {
   color: var(--accent);
 }
 
-/* TABELA */
 table {
   width: 100%;
   border-collapse: collapse;
@@ -81,19 +76,16 @@ tbody tr:hover {
   background: var(--row-hover);
 }
 
-/* Cores por magnitude */
 .mag-low { color: #2ecc71; font-weight: bold; }
 .mag-mid { color: #f1c40f; font-weight: bold; }
 .mag-high { color: #e67e22; font-weight: bold; }
 .mag-veryhigh { color: #e74c3c; font-weight: bold; }
 
-/* Ícone do globo */
 .map-icon {
   font-size: 20px;
   text-decoration: none;
 }
 
-/* Mobile */
 @media (max-width: 700px) {
   table, thead, tbody, th, td, tr { display: block; }
   thead { display: none; }
@@ -116,7 +108,6 @@ tbody tr:hover {
   }
 }
 
-/* Onda de choque */
 @keyframes shockwave {
   0%   { transform: scale(0.2); opacity: 0.8; }
   70%  { transform: scale(2.5); opacity: 0; }
@@ -147,7 +138,6 @@ tbody tr:hover {
   </table>
 </div>
 
-<!-- Leaflet JS -->
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 
 <script>
@@ -271,7 +261,7 @@ async function loadEarthquakes() {
 }
 
 async function loadTectonicBoundaries() {
-    const url = "https://raw.githubusercontent.com/johan/world.geo.json/master/tectonicplates/plates.json";
+    const url = "https://raw.githubusercontent.com/fraxen/tectonicplates/master/GeoJSON/PB2002_boundaries.json";
 
     try {
         const response = await fetch(url);
