@@ -162,17 +162,17 @@ function markerSize(mag) {
 }
 
 async function loadEarthquakes() {
-  const url = "https://www.seismicportal.eu/fdsnws/event/1/query?limit=50&format=json";
+  const emscUrl = "https://www.seismicportal.eu/fdsnws/event/1/query?limit=30&format=json";
 
   try {
-    const response = await fetch(url);
+    const response = await fetch(emscUrl);
     const data = await response.json();
 
     const tbody = document.querySelector("#eqTable tbody");
     tbody.innerHTML = "";
     markersLayer.clearLayers();
 
-    data.features.forEach(eq => {
+    for (const eq of data.features) {
       const p = eq.properties;
       const g = eq.geometry;
 
@@ -180,10 +180,39 @@ async function loadEarthquakes() {
       const lon = g.coordinates[0];
       const googleLink = `https://www.google.com/maps?q=${lat},${lon}`;
 
+      // converter tempo do EMSC para ISO
+      const t = new Date(p.time);
+      const start = new Date(t.getTime() - 60000).toISOString(); // -1 min
+      const end = new Date(t.getTime() + 60000).toISOString();   // +1 min
+
+      // procurar no USGS
+      const usgsUrl =
+        `https://earthquake.usgs.gov/fdsnws/event/1/query?format=geojson` +
+        `&latitude=${lat}&longitude=${lon}&maxradiuskm=20` +
+        `&starttime=${start}&endtime=${end}`;
+
+      let mmi = "";
+      let cdi = "";
+      let felt = "";
+
+      try {
+        const usgsResp = await fetch(usgsUrl);
+        const usgsData = await usgsResp.json();
+
+        if (usgsData.features && usgsData.features.length > 0) {
+          const u = usgsData.features[0].properties;
+          mmi = u.mmi ?? "";
+          cdi = u.cdi ?? "";
+          felt = u.felt ?? "";
+        }
+      } catch (e) {
+        console.warn("Erro ao consultar USGS:", e);
+      }
+
+      // marcador simples
       const size = markerSize(p.mag);
       const color = markerColor(p.mag);
 
-      // marcador simples, sem ondas de choque
       let icon = L.divIcon({
         className: "",
         html: `
@@ -206,10 +235,14 @@ async function loadEarthquakes() {
         <b>Magnitude:</b> ${p.mag}<br>
         <b>Profundidade:</b> ${p.depth} km<br>
         <b>Entidade:</b> ${p.auth}<br>
+        <b>Mercalli (MMI):</b> ${mmi}<br>
+        <b>Sentido (CDI):</b> ${cdi}<br>
+        <b>Relatos:</b> ${felt}<br>
         <b>Data/Hora:</b> ${p.time}<br>
         <a href="${googleLink}" target="_blank">Abrir no Google Maps</a>
       `);
 
+      // linha da tabela
       const row = `
         <tr>
           <td data-label="Data/Hora">${p.time}</td>
@@ -217,13 +250,16 @@ async function loadEarthquakes() {
           <td data-label="Profundidade">${p.depth} km</td>
           <td data-label="Localização">${p.flynn_region}</td>
           <td data-label="Entidade">${p.auth}</td>
+          <td data-label="MMI">${mmi}</td>
+          <td data-label="CDI">${cdi}</td>
+          <td data-label="Relatos">${felt}</td>
           <td data-label="Mapa">
               <a class="map-icon" href="${googleLink}" target="_blank">🌍</a>
           </td>
         </tr>
       `;
       tbody.innerHTML += row;
-    });
+    }
 
   } catch (e) {
     console.error("Erro ao carregar dados:", e);
