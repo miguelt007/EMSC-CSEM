@@ -141,6 +141,7 @@ tbody tr:hover {
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 
 <script>
+/* MAPA */
 let map = L.map('map').setView([20, 0], 2);
 
 L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
@@ -148,144 +149,124 @@ L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
 }).addTo(map);
 
 let markersLayer = L.layerGroup().addTo(map);
-let tectonicBoundaries = L.layerGroup().addTo(map);
 
+/* FUNÇÕES */
 function magClass(mag) {
-    if (mag < 4) return "mag-low";
-    if (mag < 5) return "mag-mid";
-    if (mag < 6) return "mag-high";
-    return "mag-veryhigh";
+  if (mag < 4) return "mag-low";
+  if (mag < 5) return "mag-mid";
+  if (mag < 6) return "mag-high";
+  return "mag-veryhigh";
 }
 
 function markerColor(mag) {
-    if (mag < 4) return "green";
-    if (mag < 5) return "yellow";
-    if (mag < 6) return "orange";
-    return "red";
+  if (mag < 4) return "green";
+  if (mag < 5) return "yellow";
+  if (mag < 6) return "orange";
+  return "red";
 }
 
 function markerSize(mag) {
-    return 10 + mag * 4;
+  return 10 + mag * 4;
 }
 
+/* SISMOS */
 async function loadEarthquakes() {
-    const url = "https://www.seismicportal.eu/fdsnws/event/1/query?limit=20&format=json";
+  const url = "https://www.seismicportal.eu/fdsnws/event/1/query?limit=20&format=json";
 
-    try {
-        const response = await fetch(url);
-        const data = await response.json();
+  try {
+    const response = await fetch(url);
+    const data = await response.json();
 
-        const tbody = document.querySelector("#eqTable tbody");
-        tbody.innerHTML = "";
-        markersLayer.clearLayers();
+    const tbody = document.querySelector("#eqTable tbody");
+    tbody.innerHTML = "";
+    markersLayer.clearLayers();
 
-        data.features.forEach(eq => {
-            const p = eq.properties;
-            const g = eq.geometry;
+    data.features.forEach(eq => {
+      const p = eq.properties;
+      const g = eq.geometry;
 
-            const lat = g.coordinates[1];
-            const lon = g.coordinates[0];
+      const lat = g.coordinates[1];
+      const lon = g.coordinates[0];
+      const googleLink = `https://www.google.com/maps?q=${lat},${lon}`;
 
-            const googleLink = `https://www.google.com/maps?q=${lat},${lon}`;
+      const size = markerSize(p.mag);
+      const color = markerColor(p.mag);
+      const wrapper = size * 2;
 
-            const size = markerSize(p.mag);
-            const color = markerColor(p.mag);
-            const wrapper = size * 2;
+      /* ÍCONE ALINHADO (VERSÃO FINAL) */
+      let icon = L.divIcon({
+        className: "",
+        html: `
+          <div style="
+            position:absolute;
+            top:50%;
+            left:50%;
+            width:${wrapper}px;
+            height:${wrapper}px;
+            transform:translate(-50%, -50%);
+          ">
+            <div style="
+              position:absolute;
+              top:50%;
+              left:50%;
+              width:${size}px;
+              height:${size}px;
+              background:${color};
+              border-radius:50%;
+              box-shadow:0 0 15px ${color};
+              transform:translate(-50%, -50%);
+            "></div>
 
-            let icon = L.divIcon({
-                className: "",
-                html: `
-                  <div style="
-                    position: relative;
-                    width:${wrapper}px;
-                    height:${wrapper}px;
-                  ">
-                    <div style="
-                      position:absolute;
-                      top:50%;
-                      left:50%;
-                      width:${size}px;
-                      height:${size}px;
-                      background:${color};
-                      border-radius:50%;
-                      box-shadow:0 0 15px ${color};
-                      transform:translate(-50%, -50%);
-                    "></div>
+            <div style="
+              position:absolute;
+              top:50%;
+              left:50%;
+              width:${wrapper}px;
+              height:${wrapper}px;
+              border:2px solid ${color};
+              border-radius:50%;
+              transform:translate(-50%, -50%);
+              animation:shockwave 2s infinite;
+            "></div>
+          </div>
+        `,
+        iconSize: [0, 0],
+        iconAnchor: [0, 0]
+      });
 
-                    <div style="
-                      position:absolute;
-                      top:50%;
-                      left:50%;
-                      width:${wrapper}px;
-                      height:${wrapper}px;
-                      border:2px solid ${color};
-                      border-radius:50%;
-                      transform:translate(-50%, -50%);
-                      animation:shockwave 2s infinite;
-                    "></div>
-                  </div>
-                `,
-                iconSize: [wrapper, wrapper],
-                iconAnchor: [wrapper / 2, wrapper / 2]
-            });
+      let marker = L.marker([lat, lon], { icon }).addTo(markersLayer);
 
-            let marker = L.marker([lat, lon], { icon }).addTo(markersLayer);
+      marker.bindPopup(`
+        <b>${p.flynn_region}</b><br>
+        <b>Magnitude:</b> ${p.mag}<br>
+        <b>Profundidade:</b> ${p.depth} km<br>
+        <b>Entidade:</b> ${p.auth}<br>
+        <b>Data/Hora:</b> ${p.time}<br>
+        <a href="${googleLink}" target="_blank">Abrir no Google Maps</a>
+      `);
 
-            marker.bindPopup(`
-              <b>${p.flynn_region}</b><br>
-              <b>Magnitude:</b> ${p.mag}<br>
-              <b>Profundidade:</b> ${p.depth} km<br>
-              <b>Entidade:</b> ${p.auth}<br>
-              <b>Data/Hora:</b> ${p.time}<br>
-              <a href="${googleLink}" target="_blank">Abrir no Google Maps</a>
-            `);
+      const row = `
+        <tr>
+          <td data-label="Data/Hora">${p.time}</td>
+          <td data-label="Magnitude" class="${magClass(p.mag)}">${p.mag}</td>
+          <td data-label="Profundidade">${p.depth} km</td>
+          <td data-label="Localização">${p.flynn_region}</td>
+          <td data-label="Entidade">${p.auth}</td>
+          <td data-label="Mapa">
+              <a class="map-icon" href="${googleLink}" target="_blank">🌍</a>
+          </td>
+        </tr>
+      `;
+      tbody.innerHTML += row;
+    });
 
-            const row = `
-              <tr>
-                <td data-label="Data/Hora">${p.time}</td>
-                <td data-label="Magnitude" class="${magClass(p.mag)}">${p.mag}</td>
-                <td data-label="Profundidade">${p.depth} km</td>
-                <td data-label="Localização">${p.flynn_region}</td>
-                <td data-label="Entidade">${p.auth}</td>
-                <td data-label="Mapa">
-                    <a class="map-icon" href="${googleLink}" target="_blank">🌍</a>
-                </td>
-              </tr>
-            `;
-            tbody.innerHTML += row;
-        });
-
-    } catch (e) {
-        console.error("Erro ao carregar dados:", e);
-    }
-}
-
-async function loadTectonicBoundaries() {
-    const url = "https://raw.githubusercontent.com/fraxen/tectonicplates/master/GeoJSON/PB2002_boundaries.json";
-
-    try {
-        const response = await fetch(url);
-        const data = await response.json();
-
-        tectonicBoundaries.clearLayers();
-
-        L.geoJSON(data, {
-            style: {
-                color: "#888888",
-                weight: 1.5,
-                opacity: 0.8
-            }
-        }).addTo(tectonicBoundaries);
-
-    } catch (e) {
-        console.error("Erro ao carregar limites das placas:", e);
-    }
+  } catch (e) {
+    console.error("Erro ao carregar dados:", e);
+  }
 }
 
 loadEarthquakes();
 setInterval(loadEarthquakes, 180000);
-
-loadTectonicBoundaries();
 </script>
 
 </body>
