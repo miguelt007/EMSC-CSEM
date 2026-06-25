@@ -141,16 +141,34 @@ tbody tr:hover {
 async function loadEarthquakes() {
     const url = "https://www.seismicportal.eu/fdsnws/event/1/query?limit=20&format=json";
 
-    const response = await fetch(url);
-    const data = await response.json();
+    try {
+        const response = await fetch(url);
+        const data = await response.json();
 
-    const tbody = document.querySelector("#eqTable tbody");
-    tbody.innerHTML = "";
+        const tbody = document.querySelector("#eqTable tbody");
+        tbody.innerHTML = "";
 
-    data.features.forEach(eq => {
-        const p = eq.properties;
+        data.features.forEach(eq => {
+            const p = eq.properties;
 
-        const row = `
-          <tr>
-            <td data-label="Data/Hora">${p.time}</td>
-            <td data-label="Magnitude">
+            const row = `
+              <tr>
+                <td data-label="Data/Hora">${p.time}</td>
+                <td data-label="Magnitude">${p.mag}</td>
+                <td data-label="Profundidade">${p.depth} km</td>
+                <td data-label="Localização">${p.flynn_region}</td>
+              </tr>
+            `;
+            tbody.innerHTML += row;
+        });
+    } catch (e) {
+        console.error("Erro ao carregar dados:", e);
+    }
+}
+
+loadEarthquakes();
+setInterval(loadEarthquakes, 180000); // 3 minutos
+</script>
+
+</body>
+</html>
