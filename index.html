@@ -194,9 +194,9 @@ async function loadEarthquakes() {
         `&latitude=${lat}&longitude=${lon}&maxradiuskm=20` +
         `&starttime=${start}&endtime=${end}`;
 
-      let mmi = "";
-      let cdi = "";
-      let felt = "";
+      let mmi = "-";
+      let cdi = "-";
+      let felt = "-";
 
       try {
         const usgsResp = await fetch(usgsUrl);
@@ -204,9 +204,9 @@ async function loadEarthquakes() {
 
         if (usgsData.features && usgsData.features.length > 0) {
           const u = usgsData.features[0].properties;
-          mmi = u.mmi ?? "";
-          cdi = u.cdi ?? "";
-          felt = u.felt ?? "";
+          mmi = (u.mmi !== null && u.mmi !== undefined) ? u.mmi : "—";
+          cdi = (u.cdi !== null && u.cdi !== undefined) ? u.cdi : "—";
+          felt = (u.felt !== null && u.felt !== undefined) ? u.felt : "—";
         }
       } catch (e) {
         console.warn("Erro ao consultar USGS:", e);
