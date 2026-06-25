@@ -106,6 +106,9 @@ tbody tr:hover {
     font-weight: bold;
     color: var(--accent);
   }
+  td {
+  white-space: nowrap;
+  }
 }
 </style>
 </head>
@@ -204,9 +207,9 @@ async function loadEarthquakes() {
 
         if (usgsData.features && usgsData.features.length > 0) {
           const u = usgsData.features[0].properties;
-          mmi = (u.mmi !== null && u.mmi !== undefined) ? u.mmi : "—";
-          cdi = (u.cdi !== null && u.cdi !== undefined) ? u.cdi : "—";
-          felt = (u.felt !== null && u.felt !== undefined) ? u.felt : "—";
+          mmi = (u.mmi !== null && u.mmi !== undefined) ? u.mmi : "N/A";
+          cdi = (u.cdi !== null && u.cdi !== undefined) ? u.cdi : "N/A";
+          felt = (u.felt !== null && u.felt !== undefined) ? u.felt : "N/A";
         }
       } catch (e) {
         console.warn("Erro ao consultar USGS:", e);
