@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Sismos em Tempo Real - EMSC</title>
+<title>Sismos em Tempo Real - EMSC + USGS</title>
 
 <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
 
@@ -115,22 +115,22 @@ tbody tr:hover {
 <div id="map"></div>
 
 <div class="container">
-  <h2>Sismos em Tempo Real (EMSC‑CSEM)</h2>
+  <h2>Sismos em Tempo Real (EMSC + USGS)</h2>
 
   <table id="eqTable">
     <thead>
-  <tr>
-    <th>Data/Hora</th>
-    <th>Mag</th>
-    <th>Prof</th>
-    <th>Localização</th>
-    <th>Entidade</th>
-    <th>MMI</th>
-    <th>CDI</th>
-    <th>Relatos</th>
-    <th>Mapa</th>
-  </tr>
-</thead>
+      <tr>
+        <th>Data/Hora</th>
+        <th>Mag</th>
+        <th>Prof</th>
+        <th>Localização</th>
+        <th>Entidade</th>
+        <th>MMI</th>
+        <th>CDI</th>
+        <th>Relatos</th>
+        <th>Mapa</th>
+      </tr>
+    </thead>
     <tbody></tbody>
   </table>
 </div>
@@ -185,8 +185,8 @@ async function loadEarthquakes() {
 
       // converter tempo do EMSC para ISO
       const t = new Date(p.time);
-      const start = new Date(t.getTime() - 60000).toISOString(); // -1 min
-      const end = new Date(t.getTime() + 60000).toISOString();   // +1 min
+      const start = new Date(t.getTime() - 60000).toISOString();
+      const end = new Date(t.getTime() + 60000).toISOString();
 
       // procurar no USGS
       const usgsUrl =
