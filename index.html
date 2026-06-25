@@ -2,27 +2,140 @@
 <html lang="pt">
 <head>
 <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Sismos em Tempo Real - EMSC</title>
+
 <style>
-  table { border-collapse: collapse; width: 100%; }
-  th, td { border: 1px solid #ccc; padding: 8px; text-align: left; }
-  th { background: #eee; }
+/* ------------------------------
+   ESTILO GLOBAL
+--------------------------------*/
+:root {
+  --bg: #ffffff;
+  --bg2: #f5f5f5;
+  --text: #222;
+  --accent: #007bff;
+  --row-hover: #e9e9e9;
+}
+
+/* Dark mode automático */
+@media (prefers-color-scheme: dark) {
+  :root {
+    --bg: #121212;
+    --bg2: #1e1e1e;
+    --text: #e5e5e5;
+    --accent: #4da3ff;
+    --row-hover: #2a2a2a;
+  }
+}
+
+body {
+  margin: 0;
+  font-family: Arial, sans-serif;
+  background: var(--bg);
+  color: var(--text);
+  padding: 20px;
+}
+
+/* ------------------------------
+   CONTAINER
+--------------------------------*/
+.container {
+  max-width: 1100px;
+  margin: auto;
+  background: var(--bg2);
+  padding: 20px;
+  border-radius: 12px;
+  box-shadow: 0 0 20px rgba(0,0,0,0.15);
+}
+
+/* ------------------------------
+   TÍTULO
+--------------------------------*/
+h2 {
+  margin-top: 0;
+  text-align: center;
+  font-size: 26px;
+  color: var(--accent);
+}
+
+/* ------------------------------
+   TABELA
+--------------------------------*/
+table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-top: 20px;
+}
+
+thead {
+  background: var(--accent);
+  color: white;
+}
+
+th, td {
+  padding: 12px;
+  text-align: left;
+  font-size: 15px;
+}
+
+tbody tr {
+  transition: 0.2s;
+}
+
+tbody tr:hover {
+  background: var(--row-hover);
+}
+
+/* Mobile */
+@media (max-width: 700px) {
+  table, thead, tbody, th, td, tr {
+    display: block;
+  }
+
+  thead {
+    display: none;
+  }
+
+  tr {
+    margin-bottom: 15px;
+    background: var(--bg);
+    padding: 10px;
+    border-radius: 10px;
+  }
+
+  td {
+    display: flex;
+    justify-content: space-between;
+    padding: 8px 5px;
+    border-bottom: 1px solid #3333;
+  }
+
+  td::before {
+    content: attr(data-label);
+    font-weight: bold;
+    color: var(--accent);
+  }
+}
 </style>
 </head>
+
 <body>
 
-<h2>Sismos em Tempo Real (EMSC-CSEM)</h2>
-<table id="eqTable">
-  <thead>
-    <tr>
-      <th>Data/Hora</th>
-      <th>Magnitude</th>
-      <th>Profundidade</th>
-      <th>Localização</th>
-    </tr>
-  </thead>
-  <tbody></tbody>
-</table>
+<div class="container">
+  <h2>Sismos em Tempo Real (EMSC‑CSEM)</h2>
+
+  <table id="eqTable">
+    <thead>
+      <tr>
+        <th>Data/Hora</th>
+        <th>Magnitude</th>
+        <th>Profundidade</th>
+        <th>Localização</th>
+      </tr>
+    </thead>
+    <tbody></tbody>
+  </table>
+</div>
 
 <script>
 async function loadEarthquakes() {
@@ -35,24 +148,9 @@ async function loadEarthquakes() {
     tbody.innerHTML = "";
 
     data.features.forEach(eq => {
-        const props = eq.properties;
+        const p = eq.properties;
 
         const row = `
           <tr>
-            <td>${props.time}</td>
-            <td>${props.mag}</td>
-            <td>${props.depth} km</td>
-            <td>${props.flynn_region}</td>
-          </tr>
-        `;
-        tbody.innerHTML += row;
-    });
-}
-
-// Atualiza a cada 3 minutos
-loadEarthquakes();
-setInterval(loadEarthquakes, 180000);
-</script>
-
-</body>
-</html>
+            <td data-label="Data/Hora">${p.time}</td>
+            <td data-label="Magnitude">
